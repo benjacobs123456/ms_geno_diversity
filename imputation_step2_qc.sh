@@ -9,7 +9,7 @@
 
 
 cd /data/scratch/hmy117/adams_imputed/
-for anc in sas afr;
+for anc in sas afr eur;
     do 
         # do QC
         ~/plink2 \

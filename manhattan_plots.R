@@ -41,12 +41,6 @@ gnomad_anc_code = if(anc == "afr"){
 freq_code = paste0("gnomADg_",gnomad_anc_code,"_AF")
 
 
-# plot
-outplot = paste0(
-    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_",
-    anc,"_MS_status.png"
-)
-
 # compare with imsgc
 imsgc = read_tsv("/data/home/hmy117/ADAMS/genotypes/IMSGC_GWAS/imsgc_ms_risk_discovery_hg38.tsv",col_types = "dccdddddddc")
 
@@ -64,51 +58,6 @@ dat = dat %>%
     mutate(lower_ci = exp(BETA - 1.96*SE)) %>%
     mutate(upper_ci = exp(BETA - 1.96*SE))
 
-# manhattan
-chrcoords = dat %>% group_by(CHROM) %>% summarise(min_bp = min(GENPOS), max_bp = max(GENPOS)) %>%
-    mutate(CHROM = CHROM + 1) %>%
-    mutate(cumbp_total = cumsum(max_bp))
-dat = dat %>%
-    left_join(chrcoords,by="CHROM") %>%
-    mutate(cumbp = ifelse(is.na(cumbp_total),GENPOS,GENPOS+cumbp_total))
-midpoints = dat %>%
-    group_by(CHROM) %>%
-    summarise(midpoint = median(cumbp))
-
-
-# define windows
-dat = dat %>% mutate(window = round(cumbp / 1e6,0))
-sig_imsgc_windows = dat %>% group_by(window) %>% dplyr::count(sig_imsgc) %>% filter(n>1) %>%
-    filter(sig_imsgc=="sig")
-dat = dat %>%
-    mutate(colcode = case_when(
-        window %in% sig_imsgc_windows$window ~ "sig",
-        CHROM %%2 == 0 ~ "even",
-        CHROM %%2 != 0 ~ "odd"
-    ))
-
-pal = c("blue","lavenderblush1","lavenderblush2")
-names(pal) = c("sig","even","odd")
-
-p = ggplot(dat %>% filter(P < 0.5),aes(cumbp,LOG10P,color=colcode))+
-    geom_point(data = dat %>% filter(colcode != "sig"),alpha=0.6)+
-    geom_point(data = dat %>% filter(colcode == "sig"),alpha=0.8)+
-    scale_x_continuous(breaks = midpoints$midpoint,labels = midpoints$CHROM)+
-    scale_color_manual(values = pal)+
-    ggrepel::geom_text_repel(data = dat %>%
-        filter(P < 5e-4 & colcode == "sig") %>%
-        filter(!is.na(NEAREST)) %>%
-        group_by(CHROM) %>%
-        slice_min(P,with_ties=F,n=3) %>%
-        distinct(NEAREST,.keep_all=T),
-    mapping = aes(label = NEAREST),min.segment.length=0,nudge_y=0.5,color="black")+
-    theme_bw()+
-    theme(legend.position="none")+
-    labs(y=bquote(log[10]~P),x="Genomic co-ordinates")
-
-png(outplot,units="in",res=900,width=10,height=4)
-p
-dev.off()
 
 # save to file
 outfile = paste0(
@@ -133,7 +82,6 @@ filter(P < 5e-4) %>%
 
 write_csv(sig_hits_with_imsgc,
 outfile)
-
 
 
 # AF plot
@@ -165,21 +113,6 @@ ggplot(sig_hits,aes(A1FREQ,abs(BETA)))+
     theme_bw()
 dev.off()
 
-# Info plot
-
-outplot = paste0(
-    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_info_maf_p_",
-    anc,"_MS_status.png"
-)
-
-png(outplot,units="in",res=900,width=4,height=4)
-ggplot(sig_hits,aes(R2,LOG10P))+
-    geom_point()+
-    labs(x=bquote(Imputation~R^2),y=bquote(-log[10]~P))+
-    theme_bw()
-dev.off()
-
-
 # manhattan
 dat = dat %>%
     mutate(colcode = case_when(
@@ -192,7 +125,17 @@ pal = c("blue","lavenderblush1","lavenderblush2")
 names(pal) = c("sig","even","odd")
 
 # define windows
-dat = dat %>% mutate(window = round(cumbp / 1e6,0))
+chrcoords = dat %>% group_by(CHROM) %>% summarise(min_bp = min(GENPOS), max_bp = max(GENPOS)) %>%
+    mutate(CHROM = CHROM + 1) %>%
+    mutate(cumbp_total = cumsum(max_bp))
+dat = dat %>%
+    left_join(chrcoords,by="CHROM") %>%
+    mutate(cumbp = ifelse(is.na(cumbp_total),GENPOS,GENPOS+cumbp_total))
+midpoints = dat %>%
+    group_by(CHROM) %>%
+    summarise(midpoint = median(cumbp))
+
+dat = dat %>% mutate(window = round(cumbp / 5e5,0))
 sig_windows = dat %>% group_by(window) %>%
     dplyr::count(sighits = colcode=="sig") %>%
     filter(sighits==T)
@@ -208,15 +151,17 @@ dat_for_gene_labels = data = dat %>%
 near_imsgc_hist = list()
 for(i in c(1:nrow(dat_for_gene_labels))){
     this_snp = dat_for_gene_labels[i,]
-    this_imsgc_locus = imsgc %>% filter(CHR == this_snp$CHR & BP > this_snp$BP - 1e6 & BP < this_snp$BP + 1e6)
+    this_imsgc_locus = imsgc %>% filter(CHR == this_snp$CHR & BP > this_snp$BP - 5e5 & BP < this_snp$BP + 5e5)
     hits = this_imsgc_locus %>% filter( P < 5e-8)
     near_imsgc_hist[[i]] = nrow(hits) > 0
 }
 dat_for_gene_labels$near_imsgc_hit = unlist(near_imsgc_hist)
+
 p = ggplot(dat %>% filter(P < 0.1),aes(cumbp,LOG10P,color=colcode))+
-    geom_point(data = dat %>% filter(P < 0.1 & colcode != "sig"),alpha=0.7)+
-    geom_point(data = dat %>% filter(P < 0.1 & colcode == "sig" & P >5e-4),alpha=0.7)+
-    geom_point(data = dat %>% filter(P < 0.1 & colcode == "sig" & P <=5e-4),alpha=1)+
+    geom_point(data = dat %>% filter(P < 0.1 & colcode != "sig"),alpha=0.3)+
+    geom_point(data = dat %>% filter(P < 0.1 & colcode == "sig" & P >5e-4),alpha=0.5)+
+    geom_point(data = dat %>% filter(P < 0.1 & colcode == "sig" & P <=5e-4 & P >5e-8),alpha=0.7)+
+    geom_point(data = dat %>% filter(P < 0.1 & colcode == "sig" & P <=5e-8),alpha=1)+
     scale_x_continuous(breaks = midpoints$midpoint,labels = midpoints$CHROM)+
     scale_color_manual(values = pal)+
     ggrepel::geom_label_repel(data = dat_for_gene_labels,
@@ -224,7 +169,7 @@ p = ggplot(dat %>% filter(P < 0.1),aes(cumbp,LOG10P,color=colcode))+
     theme_bw()+
     theme(legend.position="none")+
     labs(y=bquote(log[10]~P),x="Genomic co-ordinates")+
-    geom_hline(yintercept=4,linetype="dashed",alpha=0.5,color="blue")+
+    geom_hline(yintercept=-log10(5e-4),linetype="dashed",alpha=0.5,color="blue")+
     geom_hline(yintercept=-log10(5e-8),linetype="dashed",alpha=0.5,color="red")
 
 outplot = paste0(
@@ -235,114 +180,6 @@ outplot = paste0(
 
 png(outplot,units="in",res=900,width=12,height=4)
 p
-dev.off()
-
-# beta-beta plots
-dat = read_table(paste0(
-    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_",
-    anc,"_MS_status.regenie_hg38"
-)) %>%
-    mutate(P = 10^-LOG10P, CHR = CHROM, BP = GENPOS, SNP = ID) %>%
-    left_join(nearest,by="SNP")
-
-# join
-combo_dat = dat %>%
-    inner_join(imsgc,by=c("CHR","BP")) %>%
-    filter(
-        (ALLELE1 == A1 & ALLELE0 == A2 ) |
-        (ALLELE1 == A2 & ALLELE0 == A1 ))
-
-# flip betas
-combo_dat = combo_dat %>%
-    mutate(BETA.x = ifelse(
-        (ALLELE1 == A1 & ALLELE0 == A2 ),
-        BETA.x,
-        BETA.x*-1))
-
-# look at concordance
-# beta-beta plot for non-MHC SNPs SNPs achieving P < 5e-8 in IMSGC
-
-combo_dat = combo_dat %>%
-    mutate(concordant = ifelse(sign(BETA.x) == sign(BETA.y),
-    "yes","no"))
-
-concordance = combo_dat %>% filter(!(CHROM == 6 & GENPOS > 25e6 & GENPOS <35e6) &
-    P.y < 5e-8 & P.x < 0.05) %>%
-    dplyr::count(concordant)
-
-
-binom = binom.test(concordance[concordance$concordant=="yes",]$n,
-concordance[concordance$concordant=="yes",]$n + concordance[concordance$concordant=="no",]$n,
-0.5,alternative="greater")$p.value
-
-p = ggplot(
-    combo_dat %>% filter(!(CHROM == 6 & GENPOS > 25e6 & GENPOS <35e6) & P.y < 5e-8 & P.x < 0.05),
-    aes(BETA.y,BETA.x,size=-log10(P.x),col=concordant))+
-    geom_point()+
-    geom_vline(xintercept=0)+
-    geom_hline(yintercept=0)+
-    geom_errorbarh(mapping = aes(xmin = BETA.y - 1.96* SE.y,xmax = BETA.y + 1.96* SE.y,BETA.x),height=0.1,linewidth=0.1)+
-    geom_errorbar(mapping = aes(ymin = BETA.x - 1.96* SE.x,ymax = BETA.x + 1.96* SE.x,BETA.y),width=0.1,linewidth=0.1)+
-    theme_bw()+
-    labs(x="IMSGC effect size",y="ADAMS effect size")+
-    ggtitle("One-tailed binomial test P: ",binom)
-
-outplot = paste0(
-    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_",
-    anc,"_MS_status_beta_beta_plot.png"
-)
-
-png(outplot,units="in",res=900,width=6,height=6)
-p
-dev.off()
-
-# PLINK glm vs regenie
-
-dat = read_table(paste0(
-    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_",
-    anc,"_MS_status.regenie"
-)) %>%
-    mutate(P = 10^-LOG10P, CHR = CHROM, BP = GENPOS, SNP = ID) %>%
-    left_join(nearest,by="SNP")
-
-plink_dat = read_table(paste0(
-    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_glm",
-    anc,".MS_status.glm.logistic.hybrid"
-))
-plink_dat = plink_dat %>% dplyr::rename("CHR" = `#CHROM`,"BP"=POS) %>%
-    mutate(BETA = log(OR))
-
-# join
-combo_dat = dat %>%
-    left_join(plink_dat,by="ID")
-
-# beta-beta plot & P-P plot vs plink
-p = ggplot(
-    combo_dat %>% filter(P.x < 0.5 & P.y < 0.5),
-    aes(BETA.y,BETA.x))+
-    geom_point()+
-    geom_vline(xintercept=0)+
-    geom_hline(yintercept=0)+
-    theme_bw()+
-    geom_abline(intercept=0,slope=1)+
-    labs(x="PLINK effect size",y="REGENIE effect size")
-p1 = ggplot(
-    combo_dat %>% filter(P.x < 0.5 & P.y < 0.5),
-    aes(-log10(P.y),-log10(P.x),col=factor(CHROM)))+
-    geom_point()+
-    geom_vline(xintercept=0)+
-    geom_hline(yintercept=0)+
-    theme_bw()+
-    geom_abline(intercept=0,slope=1)+
-    labs(x="PLINK -log10(P)",y="REGENIE -log10(P)",col="Chromosome")
-
-outplot = paste0(
-    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_",
-    anc,"_MS_status_plink_vs_regenie.png"
-)
-
-png(outplot,units="in",res=900,width=10,height=4)
-cowplot::plot_grid(p,p1,ncol=2)
 dev.off()
 
 # QQ plots

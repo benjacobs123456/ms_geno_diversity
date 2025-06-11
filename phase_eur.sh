@@ -10,7 +10,7 @@
 
 cd /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/
 
-ancestry_out="afr"
+ancestry_out="eur"
 # filter plink file
 ~/plink --bfile /data/scratch/hmy117/risk_gwas_genotypes_$ancestry_out \
 --keep ./pheno/susceptibility_ALL_$ancestry_out\_pheno.tsv \

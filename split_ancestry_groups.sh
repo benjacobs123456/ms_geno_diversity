@@ -1,9 +1,8 @@
 #!/bin/bash
 #$ -pe smp 16
 #$ -l h_vmem=16G
-#$ -l h_rt=240:0:0
+#$ -l h_rt=1:0:0
 #$ -j y
-#$ -l highmem
 #$ -N split_ancestries
 #$ -o /data/scratch/hmy117
 #$ -t 1:3

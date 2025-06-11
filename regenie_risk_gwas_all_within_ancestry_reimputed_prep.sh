@@ -5,7 +5,7 @@
 #$ -j y
 #$ -N regenie_gwas_all_ancestry_prep_imputed
 #$ -o /data/scratch/hmy117
-#$ -t 1:2
+#$ -t 1:3
 
 
 # initialise
@@ -47,7 +47,7 @@ awk '{if($1==6 && $4>25000000 && $4<35000000) print $2}' /data/scratch/hmy117/im
 --outpve /data/scratch/hmy117/pve_$ancestry_out \
 --outload /data/scratch/hmy117/snp_loadings_$ancestry_out
 
-module load R/4.2.2
+module load R
 Rscript /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/pca_outlier_removal_reimputed.R $ancestry $ancestry_out
 
 

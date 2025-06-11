@@ -19,10 +19,10 @@ make_hla_forest = function(ancestry,allele,model="additive"){
   allele_calls = read_tsv(in_file,col_types="cccdd")
   colnames(allele_calls) = c("IID","allele1","allele2","prob","match")
 
-  # truncate all calls to 1st field 
-  allele_calls = allele_calls %>% 
-    separate(allele1,sep=":",into=c("allele1","extra")) %>% 
-    separate(allele2,sep=":",into=c("allele2","extra2")) %>% 
+  # truncate all calls to 1st field
+  allele_calls = allele_calls %>%
+    separate(allele1,sep=":",into=c("allele1","extra")) %>%
+    separate(allele2,sep=":",into=c("allele2","extra2")) %>%
     dplyr::select(-extra,-extra2)
 
   allele_counts = allele_calls %>%
@@ -62,13 +62,13 @@ make_hla_forest = function(ancestry,allele,model="additive"){
   all_allele_freqs$gene = allele
   all_allele_freqs$anc = ancestry
 
-  # add total af 
-  all_allele_freqs  = all_allele_freqs %>% 
+  # add total af
+  all_allele_freqs  = all_allele_freqs %>%
     mutate(AF = (ac_Control + ac_MS) / (total_Control + total_MS))
 
 
   all_allele_freqs = all_allele_freqs %>%
-      dplyr::rename("allele"= value) 
+      dplyr::rename("allele"= value)
 
   common_alleles = all_allele_freqs %>% filter(AF >= 0.01)
 
@@ -83,7 +83,7 @@ make_hla_forest = function(ancestry,allele,model="additive"){
     # filter
     this_allele_counts = allele_counts %>% filter(value == this_allele)
 
-    
+
     # get people with 0 counts
     this_allele_counts_zeroes = allele_counts %>% filter(!IID %in% this_allele_counts$IID)  %>%
     distinct(IID,.keep_all=T) %>%
@@ -99,7 +99,7 @@ make_hla_forest = function(ancestry,allele,model="additive"){
     fish = fisher.test(tbl)
     fish_p = fish$p.value
     names(fish_p) = "fish_p"
-    fish_or = fish$estimate 
+    fish_or = fish$estimate
 
     # dominant & recessive coding
     all_dat = all_dat %>%
@@ -157,7 +157,7 @@ make_hla_forest = function(ancestry,allele,model="additive"){
 overall_res_table = list()
 overall_allele_freqs = list()
 alleles = c("A","B","C","DPB1","DQB1","DRB1")
-ancestries = c("sas","afr")
+ancestries = c("sas","afr","eur")
 param_tbl = expand.grid(alleles,ancestries)
 
 ## ADDITIVE
@@ -176,14 +176,17 @@ overall_res_table = overall_res_table %>%
 # n unique genes
 
 overall_res_table_additive = overall_res_table %>%
-  mutate(OR = exp(beta), lower_ci = exp(beta - 1.96*se),upper_ci = exp(beta+1.96*se)) 
+  mutate(OR = exp(beta), lower_ci = exp(beta - 1.96*se),upper_ci = exp(beta+1.96*se))
 
-overall_res_table_additive = 
+overall_res_table_additive =
 bind_rows(
-  overall_res_table_additive %>% 
+  overall_res_table_additive %>%
   filter(anc=="sas") %>%
   mutate(fdr = p.adjust(p,method="fdr")),
-overall_res_table_additive %>% 
+  overall_res_table_additive %>%
+  filter(anc=="eur") %>%
+  mutate(fdr = p.adjust(p,method="fdr")),
+overall_res_table_additive %>%
   filter(anc=="afr") %>%
   mutate(fdr = p.adjust(p,method="fdr"))
 )
@@ -262,8 +265,8 @@ make_hla_forest = function(ancestry,allele,model="additive"){
   all_allele_freqs$gene = allele
   all_allele_freqs$anc = ancestry
 
-  # add total af 
-  all_allele_freqs  = all_allele_freqs %>% 
+  # add total af
+  all_allele_freqs  = all_allele_freqs %>%
     mutate(AF = (ac_Control + ac_MS) / (total_Control + total_MS))
 
   # add global frequencies
@@ -297,7 +300,7 @@ make_hla_forest = function(ancestry,allele,model="additive"){
     # filter
     this_allele_counts = allele_counts %>% filter(value == this_allele)
 
-    
+
     # get people with 0 counts
     this_allele_counts_zeroes = allele_counts %>% filter(!IID %in% this_allele_counts$IID)  %>%
     distinct(IID,.keep_all=T) %>%
@@ -313,7 +316,7 @@ make_hla_forest = function(ancestry,allele,model="additive"){
     fish = fisher.test(tbl)
     fish_p = fish$p.value
     names(fish_p) = "fish_p"
-    fish_or = fish$estimate 
+    fish_or = fish$estimate
 
     # dominant & recessive coding
     all_dat = all_dat %>%
@@ -371,7 +374,7 @@ make_hla_forest = function(ancestry,allele,model="additive"){
 overall_res_table = list()
 overall_allele_freqs = list()
 alleles = c("A","B","C","DPB1","DQB1","DRB1")
-ancestries = c("sas","afr")
+ancestries = c("sas","afr","eur")
 param_tbl = expand.grid(alleles,ancestries)
 
 ## ADDITIVE
@@ -390,54 +393,59 @@ overall_res_table = overall_res_table %>%
 # n unique genes
 
 overall_res_table_additive = overall_res_table %>%
-  mutate(OR = exp(beta), lower_ci = exp(beta - 1.96*se),upper_ci = exp(beta+1.96*se)) 
+  mutate(OR = exp(beta), lower_ci = exp(beta - 1.96*se),upper_ci = exp(beta+1.96*se))
 
-overall_res_table_additive = 
+overall_res_table_additive =
 bind_rows(
-  overall_res_table_additive %>% 
+  overall_res_table_additive %>%
   filter(anc=="sas") %>%
   mutate(fdr = p.adjust(p,method="fdr")),
-overall_res_table_additive %>% 
+overall_res_table_additive %>%
   filter(anc=="afr") %>%
-  mutate(fdr = p.adjust(p,method="fdr"))
+  mutate(fdr = p.adjust(p,method="fdr")),
+  overall_res_table_additive %>%
+    filter(anc=="eur") %>%
+    mutate(fdr = p.adjust(p,method="fdr"))
 )
 
 
 overall_res_table_additive$direction = ifelse(overall_res_table_additive$beta>0,"up","down")
-p =  ggplot(overall_res_table_additive,aes(full_allele,-log10(p),fill=gene,shape=direction))+
-    ggrepel::geom_text_repel(data = overall_res_table_additive %>% filter(p<0.05),mapping = aes(label = full_allele),size=3,min.segment.length=0)+
-    geom_point(data = overall_res_table_additive %>% filter(direction=="up"),size=2,color="black",shape=24)+
-    geom_point(data = overall_res_table_additive %>% filter(direction=="down"),size=2,color="black",shape=25,show.legend=F)+
+# truncate p to 1e-10
+plot_dat = overall_res_table_additive %>% mutate(p = ifelse(p < 1e-10,1e-10,p))
+p =  ggplot(plot_dat,aes(full_allele,-log10(p),fill=gene,shape=direction))+
+    ggrepel::geom_text_repel(data = plot_dat %>% filter(p<0.05),mapping = aes(label = full_allele),size=3,min.segment.length=0)+
+    geom_point(data = plot_dat %>% filter(direction=="up"),size=2,color="black",shape=24)+
+    geom_point(data = plot_dat %>% filter(direction=="down"),size=2,color="black",shape=25,show.legend=F)+
     scale_fill_brewer(palette="Set1")+
     geom_hline(yintercept=-log10(0.05),linetype="dashed",color="pink")+
     labs(fill="HLA locus",x="HLA allele",y=bquote(-log[10]~P))+
     theme_bw()+
     theme(axis.text.x=element_text(angle=90))+
     theme(axis.text.x = element_blank())+
-    facet_wrap(~toupper(anc),nrow=2)
+    facet_wrap(~toupper(anc),nrow=3)
 
-png("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/hla_plot_alleles_all.png",res=900,units="in",width=12,height=4)
+png("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/hla_plot_alleles_all.png",res=900,units="in",width=12,height=6)
 p
 dev.off()
 
 
 write_csv(overall_res_table_additive,"/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/hla_plot_alleles_additive.csv")
 
-# more formatting 
+# more formatting
 ## get significant associations
-overall_res_table_additive_simple = overall_res_table_additive %>% 
-  dplyr::select(anc,full_allele,contains("af_"),p,fdr,fisher_p,fisher_or,OR,lower_ci,upper_ci,`USA NMDP African`,contains("South Asian"),contains("European")) %>% 
+overall_res_table_additive_simple = overall_res_table_additive %>%
+  dplyr::select(anc,full_allele,contains("af_"),p,fdr,fisher_p,fisher_or,OR,lower_ci,upper_ci,`USA NMDP African`,contains("South Asian"),contains("European")) %>%
   mutate(sas_enriched = ifelse(
     `USA NMDP South Asian Indian` > 0.05 & `USA NMDP European Caucasian` < 0.01,
      "enriched",
      " "
-  )) %>% 
+  )) %>%
   mutate(afr_enriched = ifelse(
     `USA NMDP African` > 0.05  & `USA NMDP European Caucasian` < 0.01,
      "enriched",
      " "
-  )) %>% 
-  mutate(or_ci = paste0(round(OR,2)," (",round(lower_ci,1)," - ",round(upper_ci,1),")")) %>% 
+  )) %>%
+  mutate(or_ci = paste0(round(OR,2)," (",round(lower_ci,1)," - ",round(upper_ci,1),")")) %>%
   pivot_wider(id_cols = c(full_allele,contains("NMDP"),contains("enriched")),
   names_from = anc,
   values_from = c(contains("af"),p,fdr,or_ci,fisher_p,fisher_or))
@@ -466,16 +474,19 @@ overall_res_table = overall_res_table %>%
 # n unique genes
 
 overall_res_table_additive = overall_res_table %>%
-  mutate(OR = exp(beta), lower_ci = exp(beta - 1.96*se),upper_ci = exp(beta+1.96*se)) 
+  mutate(OR = exp(beta), lower_ci = exp(beta - 1.96*se),upper_ci = exp(beta+1.96*se))
 
-overall_res_table_additive = 
+overall_res_table_additive =
 bind_rows(
-  overall_res_table_additive %>% 
+  overall_res_table_additive %>%
   filter(anc=="sas") %>%
   mutate(fdr = p.adjust(p,method="fdr")),
-overall_res_table_additive %>% 
+overall_res_table_additive %>%
   filter(anc=="afr") %>%
-  mutate(fdr = p.adjust(p,method="fdr"))
+  mutate(fdr = p.adjust(p,method="fdr")),
+  overall_res_table_additive %>%
+    filter(anc=="eur") %>%
+    mutate(fdr = p.adjust(p,method="fdr"))
 )
 
 
@@ -540,34 +551,34 @@ dev.off()
 
 
 ##############################
-# PAF 
+# PAF
 ##############################
 
 library(tidyverse)
-hla_dat1 = read_csv("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/moutsianas_alleles.csv") %>% 
-  mutate(sas_paf = (sas_case_af^2 + 2*sas_case_af*(1-sas_case_af) ) * (1 - 1 / sas_or)  ) %>% 
-  mutate(afr_paf = (afr_case_af^2 + 2*afr_case_af*(1-afr_case_af) ) * (1 - 1 / afr_or)  ) %>% 
-  mutate(eur_paf = (eur_case_af^2 + 2*eur_case_af*(1-eur_case_af) ) * (1 - 1 / eur_or)  ) %>% 
-  pivot_longer(contains("paf")) %>% 
-  dplyr::select(hla_allele,name,value) %>% 
-  mutate(name = str_remove_all(name,"_paf")) %>% 
-  mutate(paf = 100* value) %>% 
+hla_dat1 = read_csv("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/moutsianas_alleles.csv") %>%
+  mutate(sas_paf = (sas_case_af^2 + 2*sas_case_af*(1-sas_case_af) ) * (1 - 1 / sas_or)  ) %>%
+  mutate(afr_paf = (afr_case_af^2 + 2*afr_case_af*(1-afr_case_af) ) * (1 - 1 / afr_or)  ) %>%
+  mutate(eur_paf = (eur_case_af^2 + 2*eur_case_af*(1-eur_case_af) ) * (1 - 1 / eur_or)  ) %>%
+  pivot_longer(contains("paf")) %>%
+  dplyr::select(hla_allele,name,value) %>%
+  mutate(name = str_remove_all(name,"_paf")) %>%
+  mutate(paf = 100* value) %>%
   mutate(PAF = "Miettinen's")
-  
 
-hla_dat2 = read_csv("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/moutsianas_alleles.csv") %>% 
-  mutate(sas_paf = ( (sas_cont_af^2 + 2*sas_cont_af*(1-sas_cont_af) ) * (sas_or - 1) ) / (1 + (sas_cont_af^2 + 2*sas_cont_af*(1-sas_cont_af) ) * (sas_or - 1) ) ) %>% 
-  mutate(afr_paf = ( (afr_cont_af^2 + 2*afr_cont_af*(1-afr_cont_af) ) * (afr_or - 1) ) / (1 + (afr_cont_af^2 + 2*afr_cont_af*(1-afr_cont_af) ) * (afr_or - 1) ) ) %>% 
-  mutate(eur_paf = ( (eur_cont_af^2 + 2*eur_cont_af*(1-eur_cont_af) ) * (eur_or - 1) ) / (1 + (eur_cont_af^2 + 2*eur_cont_af*(1-eur_cont_af) ) * (eur_or - 1) ) ) %>% 
-  pivot_longer(contains("paf")) %>% 
-  dplyr::select(hla_allele,name,value) %>% 
-  mutate(name = str_remove_all(name,"_paf")) %>% 
-  mutate(paf = 100* value) %>% 
+
+hla_dat2 = read_csv("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/moutsianas_alleles.csv") %>%
+  mutate(sas_paf = ( (sas_cont_af^2 + 2*sas_cont_af*(1-sas_cont_af) ) * (sas_or - 1) ) / (1 + (sas_cont_af^2 + 2*sas_cont_af*(1-sas_cont_af) ) * (sas_or - 1) ) ) %>%
+  mutate(afr_paf = ( (afr_cont_af^2 + 2*afr_cont_af*(1-afr_cont_af) ) * (afr_or - 1) ) / (1 + (afr_cont_af^2 + 2*afr_cont_af*(1-afr_cont_af) ) * (afr_or - 1) ) ) %>%
+  mutate(eur_paf = ( (eur_cont_af^2 + 2*eur_cont_af*(1-eur_cont_af) ) * (eur_or - 1) ) / (1 + (eur_cont_af^2 + 2*eur_cont_af*(1-eur_cont_af) ) * (eur_or - 1) ) ) %>%
+  pivot_longer(contains("paf")) %>%
+  dplyr::select(hla_allele,name,value) %>%
+  mutate(name = str_remove_all(name,"_paf")) %>%
+  mutate(paf = 100* value) %>%
   mutate(PAF = "Levin's")
-  
+
 dat =  bind_rows(hla_dat1,hla_dat2)
 
-  
+
 p = ggplot(dat,aes(
   hla_allele,paf,fill=toupper(name)
 )) +
@@ -579,15 +590,15 @@ scale_fill_brewer(palette="Set1")+
 facet_wrap(~PAF,nrow=2)
 
 
-# prep pheno & covar 
+# prep pheno & covar
 ancestry = "sas"
 
 pheno = read_tsv(paste0("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/pheno/reimputed_",ancestry,"_pheno.tsv"),col_types = cols(.default="c"))
 cov = read_tsv(paste0("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/pheno/reimputed_",ancestry,"_covars_with_pcs.tsv"),col_types = "ccdddddddddddd")
-pheno = pheno %>% 
+pheno = pheno %>%
   left_join(cov,by="IID")
 
-# step 1 - read in all alleles and get a wide-format dataset 
+# step 1 - read in all alleles and get a wide-format dataset
 alleles = c("A","B","C","DPB1","DQB1","DRB1")
 
 for(allele in alleles){
@@ -608,30 +619,30 @@ for(allele in alleles){
     group_by(IID) %>%
     dplyr::count(value)
 
-  # cast wide 
+  # cast wide
   allele_counts = allele_counts %>%
-    ungroup() %>% 
-    mutate(allele = paste0(allele,"*",value)) %>% 
+    ungroup() %>%
+    mutate(allele = paste0(allele,"*",value)) %>%
     pivot_wider(id_cols = IID,values_from = n, names_from = allele)
   wide_allele_counts = allele_counts %>% replace(is.na(.),0)
 
-  # add to phenotype 
-  pheno <<- pheno %>% 
+  # add to phenotype
+  pheno <<- pheno %>%
   left_join(wide_allele_counts,by="IID")
 }
 
-# do regression 1 
-## get col names 
+# do regression 1
+## get col names
 alleles_to_regress = colnames(pheno)[17:ncol(pheno)]
-model_dat = pheno %>% 
+model_dat = pheno %>%
   mutate(MS_status = ifelse(MS_status == 2,1,0))
 
-# loop through all alleles 
+# loop through all alleles
 res = list()
 for(i in c(1:length(alleles_to_regress))){
   message(i)
-  model = glm(data = model_dat, 
-  MS_status ~ sex + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + 
+  model = glm(data = model_dat,
+  MS_status ~ sex + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 +
   PC8 + PC9 + PC10 + model_dat[[alleles_to_regress[i]]], family=binomial(link="logit"))
 
   coefs = broom::tidy(model)
@@ -647,8 +658,8 @@ tophit = res %>% slice_min(p)
 res = list()
 for(i in c(1:length(alleles_to_regress))){
   message(i)
-  model = glm(data = model_dat, 
-  MS_status ~ sex + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + 
+  model = glm(data = model_dat,
+  MS_status ~ sex + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 +
   PC8 + PC9 + PC10 + model_dat[[alleles_to_regress[i]]] + model_dat[[tophit$allele[1]]], family=binomial(link="logit"))
 
   coefs = broom::tidy(model)
@@ -659,6 +670,3 @@ res = do.call("bind_rows",res)
 res$p = as.numeric(res$p)
 res = res %>% filter(!allele %in% tophit$allele)
 res = res %>% arrange(p)
-
-
-

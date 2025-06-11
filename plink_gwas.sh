@@ -5,7 +5,7 @@
 #$ -j y
 #$ -N regenie_gwas_all_ancestry
 #$ -o /data/scratch/hmy117
-#$ -t 1:2
+#$ -t 1:3
 
 
 # initialise

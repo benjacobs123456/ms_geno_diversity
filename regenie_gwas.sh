@@ -5,7 +5,7 @@
 #$ -j y
 #$ -N regenie_gwas_all_ancestry
 #$ -o /data/scratch/hmy117
-#$ -t 1:2
+#$ -t 1:3
 
 
 # initialise
@@ -76,7 +76,7 @@ cd /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/
 # Sensitivity analyses
 
 #################################
-# Age 
+# Age
 #################################
 
 cd /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/
@@ -115,7 +115,7 @@ cd /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/
 --out ./outputs/case_control_gwas_ALL_ANCESTRY_age_$ancestry_out
 
 #################################
-# PC 1 - 2 
+# PC 1 - 2
 #################################
 
 
@@ -155,7 +155,7 @@ cd /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/
 --out ./outputs/case_control_gwas_ALL_ANCESTRY_pcs_1_2_$ancestry_out
 
 #################################
-# Use all SNPs for step 1 SNPs 
+# Use all SNPs for step 1 SNPs
 #################################
 
 cd /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/

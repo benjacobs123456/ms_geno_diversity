@@ -7,7 +7,9 @@
 #$ -o /data/scratch/hmy117
 #$ -t 1:22
 
-~/plink2 --pfile /data/Wolfson-PNU-dementia/UKB/imputed_genotypes/plink2_files/chr_${SGE_TASK_ID} \
+
+
+~/plink2 --pfile /data/Wolfson-PNU-dementia/UKB_Projects/GeneticsImputed/imputed_genotypes/plink2_files/chr_${SGE_TASK_ID} \
 --extract /data/scratch/hmy117/ukb_snps_to_keep.tsv \
 --chr ${SGE_TASK_ID} \
 --make-bed \

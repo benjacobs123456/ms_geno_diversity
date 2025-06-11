@@ -4,7 +4,7 @@ setwd("/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/")
 # read summary of all prs at r2 of 0.1
 all_prs = data.frame()
 for(r2 in c(0.001,0.01,0.1,0.2,0.4,0.6,0.8)){
-for(ancestry in c("sas","afr")){
+for(ancestry in c("sas","afr","eur")){
 	prs = read_table(paste0("./outputs/prs_risk_",r2,"_",ancestry,".prsice")) %>%
 	mutate(anc=ancestry,clump_r2 = r2)
 	all_prs <<- bind_rows(all_prs,prs)
@@ -40,7 +40,7 @@ dev.off()
 # read summary of all prs at r2 of 0.1
 all_prs = data.frame()
 for(r2 in c(0.001,0.01,0.1,0.2,0.4,0.6,0.8)){
-for(ancestry in c("sas","afr")){
+for(ancestry in c("sas","afr","eur")){
 	prs = read_table(paste0("./outputs/prs_risk_",r2,"_",ancestry,".prsice")) %>%
 	mutate(anc=ancestry,clump_r2 = r2)
 	all_prs <<- bind_rows(all_prs,prs)
@@ -49,7 +49,7 @@ for(ancestry in c("sas","afr")){
 
 all_prs_nomhc = data.frame()
 for(r2 in c(0.001,0.01,0.1,0.2,0.4,0.6,0.8)){
-for(ancestry in c("sas","afr")){
+for(ancestry in c("sas","afr","eur")){
 	prs = read_table(paste0("./outputs/prs_risk_nomhc_",r2,"_",ancestry,".prsice")) %>%
 	mutate(anc=ancestry,clump_r2 = r2)
 	all_prs_nomhc <<- bind_rows(all_prs_nomhc,prs)
@@ -66,21 +66,25 @@ all_prs = all_prs %>%
 p = ggplot(all_prs,
   aes(factor(Threshold),R2,fill=factor(clump_r2)))+
   geom_col(color="black",position=position_dodge())+
-  facet_grid(MHC~toupper(anc))+
+  facet_grid(toupper(anc)~MHC)+
   theme_bw()+
   scale_fill_brewer(palette="Set1")+
   labs(x="P value threshold for PRS",
   y=bquote(Nagelkerke~R^2),
-  fill=bquote(Clumping~R^2))
-png("./outputs/prs_risk_plots_all_clumps_summ_nagelkerke.png",res=900,units="in",width=12,height=6)
+  fill=bquote(Clumping~R^2))+
+  theme(axis.text.x = element_text(angle=45,vjust=0.5))
+png("./outputs/prs_risk_plots_all_clumps_summ_nagelkerke.png",res=900,units="in",width=8,height=6)
 p
 dev.off()
+
+write_csv(all_prs,"./outputs/prs_risk_all_summ.csv")
+
 
 
 # read in best scores
 best_prs = data.frame()
 for(r2 in c(0.001,0.01,0.1,0.2,0.4,0.6,0.8)){
-for(ancestry in c("sas","afr")){
+for(ancestry in c("sas","afr","eur")){
 	prs = read_table(paste0("./outputs/prs_risk_",r2,"_",ancestry,".summary")) %>%
 	mutate(anc=ancestry,clump_r2 = r2,MHC = "MHC")
 	best_prs <<- bind_rows(best_prs,prs)
@@ -88,32 +92,36 @@ for(ancestry in c("sas","afr")){
 }
 
 for(r2 in c(0.001,0.01,0.1,0.2,0.4,0.6,0.8)){
-for(ancestry in c("sas","afr")){
+for(ancestry in c("sas","afr","eur")){
 	prs = read_table(paste0("./outputs/prs_risk_nomhc_",r2,"_",ancestry,".summary")) %>%
 	mutate(anc=ancestry,clump_r2 = r2,MHC = "No MHC")
 	best_prs <<- bind_rows(best_prs,prs)
 }
 }
 
-best_prs = best_prs %>% group_by(anc) %>% slice_min(`Empirical-P`) %>% 
+best_prs = best_prs %>%
+group_by(anc) %>%
+slice_min(`Empirical-P`) %>%
 slice_max(PRS.R2)
+
 
 # get best PRS
 write_csv(best_prs,"./outputs/best_risk_prs.csv")
 
 
 # read in best PRS individual scores
-## manual read in 
+## manual read in
 best_prs_individual_level = bind_rows(
-	read_table(paste0("./outputs/prs_risk_0.001_afr.best")) %>% mutate(anc="AFR"),
-	read_table(paste0("./outputs/prs_risk_0.01_sas.best")) %>% mutate(anc="SAS")
+	read_table(paste0("./outputs/prs_risk_nomhc_0.8_afr.best")) %>% mutate(anc="AFR"),
+	read_table(paste0("./outputs/prs_risk_nomhc_0.8_sas.best")) %>% mutate(anc="SAS"),
+	read_table(paste0("./outputs/prs_risk_0.2_eur.best")) %>% mutate(anc="EUR")
 )
 
 
 
 # read in pheno
 phenos = data.frame()
-for(ancestry in c("sas","afr")){
+for(ancestry in c("sas","afr","eur")){
 	pheno = read_table(paste0("./pheno/reimputed_",ancestry,"_pheno.tsv"))
 	phenos <<- bind_rows(phenos,pheno)
 }
@@ -125,7 +133,7 @@ best_prs_individual_level = best_prs_individual_level %>%
 
 # read in covars
 covars = data.frame()
-for(ancestry in c("sas","afr")){
+for(ancestry in c("sas","afr","eur")){
 	covar =  read_table(paste0("./pheno/reimputed_",ancestry,"_covars_with_pcs.tsv"))
 	covars <<- bind_rows(covars,covar)
 }
@@ -214,7 +222,8 @@ get_model_coefs = function(this_anc){
 
 all_dat = bind_rows(
 	get_model_coefs("SAS"),
-	get_model_coefs("AFR")
+	get_model_coefs("AFR"),
+		get_model_coefs("EUR")
 	)
 
 	p=ggplot(all_dat,aes(prs_quartile,or,fill=toupper(anc),col=toupper(anc)))+

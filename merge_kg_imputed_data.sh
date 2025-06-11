@@ -9,7 +9,7 @@
 
 cd /data/scratch/hmy117/adams_imputed/
 
-for anc in sas afr;
+for anc in sas afr eur;
     do 
         # update bim to cpra 
         for i in {1..22};

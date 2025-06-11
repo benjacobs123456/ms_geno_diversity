@@ -59,7 +59,7 @@ awk '{if($3=="MS" && $2=="UKB") print $1,$1}' /data/home/hmy117/ADAMS/genotypes/
 # exclude SNPs which 
 ## show association with cohort 
 ## MAF < 5% in either cohort
-module load R/4.2.2
+module load R
 Rscript ./scripts/exclude_snps_case_case.gwas.R $ancestry_out
 
 echo "Keeping this many SNPs from case-case GWAS:"
@@ -132,7 +132,6 @@ awk '{if($1==6 && $4>25000000 && $4<35000000) print $2}' /data/scratch/hmy117/ri
 --outpve /data/scratch/hmy117/pve_$ancestry_out \
 --outload /data/scratch/hmy117/snp_loadings_$ancestry_out
 
-module load R/4.2.2
 Rscript /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/pca_outlier_removal.R $ancestry $ancestry_out
 
 
