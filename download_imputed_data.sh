@@ -1,0 +1,24 @@
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/96744d635cfa21491301b24e21022a11ea33e4c5630244b9a9e0b7b5ee2091a1/chr_1.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/bd5e30fbf7e4d53f9c5804dace14008aae2eedd67c022634926d773e4067b485/chr_10.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/e632c7001da51e140167b243be881acdb0447ea5ef530bfdbc3bd047c0684256/chr_11.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/edc078b4560862a27fc932244208bc7fd486229bfa2ddcb88424d8dd11a917cd/chr_12.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/f514ab8b743472a53b7c6627aeb01646a2835549d9bc0219761f543d7037aec7/chr_13.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/c949b7d27ffff543881394418c1e5155e224168f5f8a00ebafd7db7ca1a1a51e/chr_14.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/ab0277d2092e62db048c42f74a498554341cb6cd040c17001cb358d7923b4c86/chr_15.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/6a3f4d8a64c9b66cf2f6c7f5b799a8e9e34e8769878c62cee9b6a86aecdbaa37/chr_16.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/70bc398501c1efcc3d42b56daca2f8c3bf1c769e99ed367deccfc63b98cdc492/chr_17.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/55fbbf1432706502a609e026476a41e6356bd85822986a4954ebc1b5f96f97a3/chr_18.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/0119d7ede338a158c9713edcdcca979b4770f793c1c7632160b2bffedae1e29a/chr_19.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/d6c2fd7f8895717e0cfa41e86b92d5a34ecedc8b3efc1f81f32ff4e9b18d183d/chr_2.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/0959f2ffbc62456de7e9ab04718a00caeff9e28fb3ea2c0a728847ede5e6957a/chr_20.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/fd4a2481d084e893a8a591d0f234925fbbba8f850ac523daa07d9c9b7e22aa32/chr_21.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/3d6e0b603edcc6dd3e29c44c8df6cb096cf968c541bb08d6cf43fae548695887/chr_22.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/db1978d870bd142a5163b8563c913d2159fbc3923489379e2219dacfa35ab586/chr_3.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/62739c99ca1d8716ee81d53fda781ce2bf4ced237fe9f49ca1f2f75fbe846a4c/chr_4.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/097a32bfa7f07a0b4abd92b950efb776b764512401cc59875ca6df0510b93624/chr_5.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/f3f6b217d60e95389159f671e85f319dbe535eef42eef7dc13b301f691d6e435/chr_6.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/0711a5d043d7efdd8143565268c322a7b6c5cfee64f44c26e16d621307430d6f/chr_7.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/d0ea5c5ce19cc80ff22b1cb51c1c38b36ef80b6e0b1d1ccd05539fa9b568f5b9/chr_8.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/21bc3ba6f4146f3da7e7e9a053c15565ca107b0d4d959920b77c86b5ae252267/chr_9.zip &
+wget https://imputation.biodatacatalyst.nhlbi.nih.gov/share/results/b52f93aa1e667a48683a9f1ab8e1986da703edbd0956ea18f947c5e1706d0b28/results.md5 &
+

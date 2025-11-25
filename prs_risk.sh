@@ -1,16 +1,16 @@
 #!/bin/bash
 #$ -pe smp 1
 #$ -l h_vmem=32G
-#$ -l h_rt=1:0:0
+#$ -l h_rt=240:0:0
 #$ -j y
 #$ -N prs_risk
 #$ -o /data/scratch/hmy117
-#$ -t 1:2
+#$ -t 1:3
 
 
 # initialise
 index=$((SGE_TASK_ID-1))
-ancestries=(sas afr)
+ancestries=(sas afr eur)
 ancestry=${ancestries[$index]}
 
 echo doing $ancestry

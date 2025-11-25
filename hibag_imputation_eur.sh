@@ -11,4 +11,4 @@
 
 
 module load R
-Rscript "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/hibag_imputation.R" ${SGE_TASK_ID} sas
+Rscript "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/hibag_imputation.R" ${SGE_TASK_ID} eur

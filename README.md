@@ -1164,7 +1164,6 @@ qsub /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/phase_sas.sh
 qsub /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/phase_eur.sh
 ````
 
-#### pick up here 2705
 
 #### Impute to 1kg with minimac4
 ````unix
@@ -1178,7 +1177,7 @@ qsub /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/imputation_step2_qc.s
 qsub /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/merge_kg_imputed_data.sh
 
 ````
-#### Power calcs # pick up here
+#### Power calcs 
 ````unix
 Rscript power_calcs_risk.R
 ````
@@ -1548,7 +1547,7 @@ Rscript ~/ADAMS/genotypes/QMUL_Aug_23/scripts/analyse_concordance.R
 cd /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/
 awk 'NR==1{print "SNP","A1","A2","P","OR"};NR>1{print "chr"$1":"$2,$4,$5,$7,$8}' /data/home/hmy117/ADAMS/genotypes/IMSGC_GWAS/discovery_metav3.0.meta > snps_for_risk_prs_all_snps
 
-qsub /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/prs_risk.sh  # running 2-6
+qsub /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/prs_risk.sh  
 module load R
 
 Rscript /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/prs_risk_analysis.R
@@ -1996,3 +1995,50 @@ facet_wrap(~PAF,nrow=2)
 --ld-window 99999 \
 --ld-window-r2 0.1
 ````
+
+#### Prep for GWAS catalogue
+````R 
+library(tidyverse)
+for(anc in c("afr","sas","eur")){
+
+# PLINK GWAS
+# hg19 names
+plink_dat = read_table(paste0(
+    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_glm",
+    anc,".MS_status.glm.logistic.hybrid_hg38"
+)) 
+
+# add REGENIE GWAS
+dat_regenie = read_table(paste0(
+    "/data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/outputs/case_control_gwas_ALL_ANCESTRY_",
+    anc,"_MS_status.regenie_hg38"
+)) %>%
+    mutate(P = 10^-LOG10P, CHR = CHROM, BP = GENPOS, SNP = ID) %>%
+    mutate(SNP = paste0(CHROM,":",GENPOS))
+
+
+# format 
+plink_dat = plink_dat %>% 
+  dplyr::rename("chromosome"=`#CHROM`,
+    "base_pair_location" = POS,
+    "effect_allele"=A1) %>% 
+    mutate("other_allele" = ifelse(effect_allele==REF,ALT,REF),
+    "beta" = log(OR)) %>% 
+    dplyr::rename("standard_error" = `LOG(OR)_SE`,
+    "p_value" = P)
+dat_regenie = dat_regenie %>% 
+  dplyr::select(CHROM,GENPOS,A1FREQ,ALLELE1,ALLELE0) %>% 
+  dplyr::rename("chromosome"=CHROM,"base_pair_location"=GENPOS)
+plink_dat = plink_dat %>% 
+  dplyr::select(chromosome,base_pair_location,effect_allele,other_allele,beta,standard_error,p_value) %>% 
+  left_join(dat_regenie,by=c("chromosome","base_pair_location"))
+plink_dat = plink_dat %>% 
+  mutate(effect_allele_frequency = ifelse(
+    effect_allele == ALLELE1,A1FREQ,1-A1FREQ
+  )) %>% 
+  filter(effect_allele==ALLELE1 | effect_allele==ALLELE0)
+
+plink_dat = plink_dat %>% 
+  dplyr::select(chromosome,base_pair_location,effect_allele,other_allele,beta,standard_error,effect_allele_frequency,p_value) 
+write_tsv(plink_dat,paste0("/data/scratch/hmy117/sumstats_for_gwas_catalogue_plink_hg38_",anc,".tsv"))
+}

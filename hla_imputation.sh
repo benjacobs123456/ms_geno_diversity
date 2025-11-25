@@ -5,11 +5,11 @@
 #$ -j y
 #$ -N hla_imp
 #$ -o /data/scratch/hmy117
-#$ -t 1:2
+#$ -t 1:3
 
 # initialise
 index=$((SGE_TASK_ID-1))
-ancestries=(sas afr)
+ancestries=(sas afr eur)
 ancestry=${ancestries[$index]}
 
 echo doing $ancestry
@@ -17,9 +17,9 @@ echo doing $ancestry
 cd /data/home/hmy117/HLA-TAPAS
 
 # rename SNPs using reference marker names
-module load R/4.2.2
+module load R
 Rscript /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/get_ref_names_for_hla_tapas.R \
-/data/scratch/hmy117/risk_gwas_genotypes_for_phase_$ancestry\_chr6.bim \
+/data/scratch/hmy117/risk_gwas_genotypes_for_phase_$ancestry\_chr6.bim
 
 
 # update names
@@ -29,18 +29,18 @@ Rscript /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/get_ref_names_for_
 --to-bp 35000000 \
 --maf 0.05 \
 --keep /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/pheno/reimputed_$ancestry\_pheno.tsv \
---update-name /data/scratch/hmy117/imputed_risk_gwas_genotypes_step2_imputation_post_qc_$ancestry\_ALL_CHRS.bim_snp_name_updates.tsv \
+--update-name /data/scratch/hmy117/risk_gwas_genotypes_for_phase_$ancestry\_chr6.bim_snp_name_updates.tsv \
 --out /data/scratch/hmy117/risk_gwas_genotypes_$ancestry\_for_hla_imp \
 --make-bed \
 --threads $NSLOTS
 
-# restrict to SNPs in ref panel 
+# restrict to SNPs in ref panel
 ~/plink2 --bfile /data/scratch/hmy117/risk_gwas_genotypes_$ancestry\_for_hla_imp \
 --extract "/data/home/hmy117/HLA-TAPAS/resources/1000G.bglv4.bim" \
 --out /data/scratch/hmy117/risk_gwas_genotypes_$ancestry\_for_hla_imp_just_ref_snps \
---make-bed 
+--make-bed
 
-# load java 
+# load java
 module load java
 
 
@@ -52,5 +52,3 @@ python3 -m SNP2HLA \
 --nthreads 1 \
 --mem 64g \
 --niterations 1
-
-
