@@ -220,8 +220,6 @@ done
 qsub /data/home/hmy117/ADAMS/genotypes/QMUL_Aug_23/scripts/download_hgdp_1kg.sh
 ````
 
-### Up to here 26-05
-
 ### Download ancestry calls
 ````unix
 ~/google-cloud-sdk/bin/gsutil cp \
